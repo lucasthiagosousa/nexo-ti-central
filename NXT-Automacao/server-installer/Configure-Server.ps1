@@ -83,7 +83,17 @@ else {
 }
 
 # Durante uma atualização, o SCM pode manter o serviço em transição por alguns
-# segundos. Valide estabilidade real, não apenas o estado Running momentâneo.
+# segundos. Valide a resposta HTTP real, não apenas o estado Running momentâneo.
+function Test-NexoEndpoint {
+  try {
+    $response = Invoke-WebRequest -Uri "http://127.0.0.1:$Port/login.html" -UseBasicParsing -TimeoutSec 3
+    return $response.StatusCode -ge 200 -and $response.StatusCode -lt 400
+  }
+  catch {
+    return $false
+  }
+}
+
 function Start-NexoServiceStable {
   param([int]$Cycles = 5)
 
@@ -104,8 +114,16 @@ function Start-NexoServiceStable {
     if ($status -eq "Running") {
       Start-Sleep -Seconds 4
       $status = (Get-Service -Name $serviceName -ErrorAction Stop).Status
-      if ($status -eq "Running") {
-        return [PSCustomObject]@{ Status = $status; Diagnostics = $diagnostics }
+      if (($status -eq "Running") -and (Test-NexoEndpoint)) {
+        return [PSCustomObject]@{ Status = "Running"; Diagnostics = $diagnostics }
+      }
+
+      $diagnostics += "O SCM informou Running, mas a aplicação não respondeu na porta $Port."
+      & cmd.exe /d /c "sc.exe stop $serviceName 2>&1" | Out-Null
+      for ($stopAttempt = 1; $stopAttempt -le 20; $stopAttempt++) {
+        Start-Sleep -Milliseconds 500
+        $status = (Get-Service -Name $serviceName -ErrorAction SilentlyContinue).Status
+        if ($status -eq "Stopped") { break }
       }
     }
 
@@ -116,8 +134,12 @@ function Start-NexoServiceStable {
     Start-Sleep -Seconds 2
   }
 
+  $finalStatus = (Get-Service -Name $serviceName -ErrorAction SilentlyContinue).Status
+  if (($finalStatus -eq "Running") -and -not (Test-NexoEndpoint)) {
+    $finalStatus = "Unhealthy"
+  }
   return [PSCustomObject]@{
-    Status = (Get-Service -Name $serviceName -ErrorAction SilentlyContinue).Status
+    Status = $finalStatus
     Diagnostics = $diagnostics
   }
 }
