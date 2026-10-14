@@ -1,0 +1,31 @@
+<service>
+  <id>NexoTICentral</id>
+  <name>Nexo TI - Central de Operações</name>
+  <description>Servidor interno da Central de Operações de TI.</description>
+
+  <executable>%BASE%\..\runtime\node.exe</executable>
+  <arguments>"%BASE%\..\app\server.js"</arguments>
+  <workingdirectory>%BASE%\..\app</workingdirectory>
+
+  <env name="NXT_ENV_FILE" value="%ProgramData%\NexoTI\CentralOperacoes\.env" />
+  <env name="NXT_DATA_DIR" value="%ProgramData%\NexoTI\CentralOperacoes\dados" />
+  <env name="PLAYWRIGHT_BROWSERS_PATH" value="%BASE%\..\browsers" />
+  <env name="NXT_AUTOMATION_HEADLESS" value="1" />
+
+  <startmode>Automatic</startmode>
+  <delayedAutoStart>true</delayedAutoStart>
+  <stoptimeout>30 sec</stoptimeout>
+
+  <onfailure action="restart" delay="10 sec" />
+  <onfailure action="restart" delay="30 sec" />
+  <resetfailure>1 hour</resetfailure>
+
+  <logpath>%ProgramData%\NexoTI\CentralOperacoes\logs</logpath>
+  <log mode="roll-by-size-time">
+    <sizeThreshold>10240</sizeThreshold>
+    <pattern>yyyyMMdd</pattern>
+    <autoRollAtTime>00:00:00</autoRollAtTime>
+    <zipOlderThanNumDays>7</zipOlderThanNumDays>
+    <zipDateFormat>yyyyMMdd</zipDateFormat>
+  </log>
+</service>

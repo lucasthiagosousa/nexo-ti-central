@@ -1,0 +1,35 @@
+appId: br.com.operacoesti.controle
+productName: Central de Operações de TI
+copyright: Copyright © 2026
+asar: true
+asarUnpack:
+  - automacao.js
+directories:
+  output: dist
+  buildResources: build
+files:
+  - "**/*"
+  - "!dist/**"
+  - "!dados/**"
+  - "!erros/**"
+  - "!.env"
+  - "!.git/**"
+  - "!.github/**"
+extraMetadata:
+  main: desktop.js
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: build/icon.ico
+  artifactName: "Central-Operacoes-TI-Setup-${version}.${ext}"
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  perMachine: true
+  include: build/installer.nsh
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: Central de Operações de TI
+  uninstallDisplayName: Central de Operações de TI
+  runAfterFinish: true

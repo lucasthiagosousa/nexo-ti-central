@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#102a43">
+  <title>Configuração inicial · Controle de Estoque</title>
+  <style>
+    :root{--navy:#102a43;--blue:#1677ff;--ink:#172b4d;--muted:#6b7c93;--line:#dfe7ef;--canvas:#f4f7fb;--red:#b42318;--green:#027a48}
+    *{box-sizing:border-box}html,body{min-height:100%;margin:0}
+    body{display:grid;place-items:center;padding:24px;background:radial-gradient(780px 450px at 85% 0,#d9f3f7,transparent 62%),var(--canvas);color:var(--ink);font-family:"Segoe UI",Tahoma,Arial,sans-serif}
+    .card{width:min(610px,100%);padding:38px;border:1px solid var(--line);border-radius:22px;background:white;box-shadow:0 24px 70px rgba(16,42,67,.14)}
+    .mark{width:48px;height:48px;display:grid;place-items:center;border-radius:14px;background:linear-gradient(135deg,var(--navy),#087f8c);color:white;font-weight:900}
+    .eyebrow{margin-top:24px;color:var(--blue);font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+    h1{margin:8px 0;color:var(--navy);font-size:30px;letter-spacing:-.04em}.subtitle{margin:0 0 24px;color:var(--muted);font-size:13px;line-height:1.6}
+    .notice{margin-bottom:22px;padding:12px 14px;border:1px solid #d7e8ff;border-radius:11px;background:#eef5ff;color:#0b63ce;font-size:11px;line-height:1.55}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}label{display:block;margin-bottom:14px;color:#405c74;font-size:11px;font-weight:800}.full{grid-column:1/-1}
+    input{width:100%;min-height:45px;margin-top:6px;padding:10px 13px;border:1px solid #d5e0ea;border-radius:11px;outline:none;background:#fbfdff;color:var(--ink);font:inherit}input:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(22,119,255,.1)}
+    .policy{margin:-4px 0 18px;color:var(--muted);font-size:10px;line-height:1.55}
+    button{width:100%;min-height:46px;border:0;border-radius:11px;background:linear-gradient(135deg,#216fea,#0b4bc3);color:white;cursor:pointer;font-weight:800;box-shadow:0 10px 24px rgba(22,119,255,.22)}button:disabled{cursor:wait;opacity:.7}
+    .message{min-height:20px;margin-top:14px;color:var(--red);font-size:11px;font-weight:700;text-align:center}
+    @media(max-width:560px){body{padding:12px}.card{padding:28px 20px}.grid{grid-template-columns:1fr}.full{grid-column:auto}}
+  </style>
+<style id="typography-normalization">
+html,body{font-family:"Segoe UI",Tahoma,Arial,sans-serif!important;font-weight:400!important;text-shadow:none!important;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+body *{text-shadow:none!important}
+body :where(p,span,label,input,select,option,textarea,td,li,small,time,caption,legend){font-weight:400!important}
+body :where(h1,h2,h3,h4,h5,h6){font-weight:600!important;letter-spacing:-.01em}
+body :where(strong,b,th,.eyebrow,.kicker,.badge,.status){font-weight:600!important}
+body :where(button,.btn,[role="button"]){font-weight:500!important}
+</style><link rel="stylesheet" href="/global-buttons.css"><link rel="icon" href="/assets/nexo-ti-icon.svg" type="image/svg+xml"><link rel="shortcut icon" href="/assets/nexo-ti-icon.svg"></head>
+<body>
+  <main class="card">
+    <div class="mark">TI</div>
+    <div class="eyebrow">Primeiro acesso</div>
+    <h1>Crie o Master Admin</h1>
+    <p class="subtitle">Essa conta terá controle exclusivo dos usuários e das regras de estoque mínimo.</p>
+    <div class="notice">A configuração fica apenas nesta instalação. A senha é protegida com hash criptográfico e não é salva em texto aberto.</div>
+    <form id="setupForm">
+      <div class="grid">
+        <label class="full">Usuário Master<input id="username" autocomplete="username" placeholder="Ex.: administrador" required autofocus></label>
+        <label>Senha<input id="password" type="password" autocomplete="new-password" required></label>
+        <label>Confirmar senha<input id="confirmation" type="password" autocomplete="new-password" required></label>
+      </div>
+      <div class="policy">Mínimo de 10 caracteres, com maiúscula, minúscula, número e símbolo.</div>
+      <button id="submitButton" type="submit">Criar Master Admin</button>
+      <div class="message" id="message" role="alert"></div>
+    </form>
+  </main>
+  <script>
+    const form = document.getElementById("setupForm");
+    const message = document.getElementById("message");
+    const submitButton = document.getElementById("submitButton");
+
+    async function checkStatus() {
+      try {
+        const response = await fetch("/api/auth/status", { cache: "no-store" });
+        const data = await response.json();
+        if (!data.setupRequired) location.replace(data.authenticated ? "/" : "/login.html");
+      } catch {
+        message.textContent = "Não foi possível acessar o servidor.";
+      }
+    }
+
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      const password = document.getElementById("password").value;
+      const confirmation = document.getElementById("confirmation").value;
+      if (password !== confirmation) {
+        message.textContent = "As senhas não são iguais.";
+        return;
+      }
+      message.textContent = "";
+      submitButton.disabled = true;
+      submitButton.textContent = "Criando...";
+      try {
+        const response = await fetch("/api/auth/setup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: document.getElementById("username").value,
+            password: password
+          })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.mensagem || "Não foi possível criar o Master.");
+        location.replace("/");
+      } catch (error) {
+        message.textContent = error.message;
+        submitButton.disabled = false;
+        submitButton.textContent = "Criar Master Admin";
+      }
+    });
+
+    checkStatus();
+  </script>
+</body>
+</html>

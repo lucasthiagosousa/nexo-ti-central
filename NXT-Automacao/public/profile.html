@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Minha conta · Central de Operações de TI</title>
+<style>
+:root{--navy:#001109;--blue:#0aad63;--text:#172b3f;--muted:#718096;--line:#dce5ee;--bg:#f3f6fa;font-family:"Segoe UI",Tahoma,Arial,sans-serif;color:var(--text)}*{box-sizing:border-box}body{margin:0;background:radial-gradient(700px 300px at 95% 0,#dff5e9,transparent 65%),var(--bg)}.header{background:linear-gradient(112deg,#001109,#042b17 52%,#087a45);color:#fff}.header-inner{max-width:1100px;margin:auto;padding:21px 28px;display:flex;align-items:center;justify-content:space-between}.brand h1{margin:0;font-size:20px}.brand p{margin:4px 0 0;color:#c8d9e3;font-size:11px}.btn{min-height:40px;padding:0 14px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--text);font:700 12px inherit;text-decoration:none;cursor:pointer}.profile-back{min-height:40px;padding:5px 11px 5px 6px;display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.26);border-radius:10px;background:rgba(255,255,255,.10);color:#fff;text-decoration:none;font-size:10px;font-weight:700;transition:.16s}.profile-back:hover{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.42);transform:translateY(-1px)}.profile-back-icon{width:29px;height:29px;display:grid;place-items:center;border-radius:8px;background:#fff;color:var(--blue)}.profile-back-icon svg{width:15px;height:15px}.profile-back-copy{display:flex;flex-direction:column;line-height:1.15}.profile-back-copy strong{font-size:10px}.profile-back-copy small{color:rgba(255,255,255,.68);font-size:8px;font-weight:500}@media(max-width:560px){.header-inner{padding:16px 14px}.profile-back-copy small{display:none}}.btn-primary{border:0;color:#fff;background:linear-gradient(135deg,#12cc78,#079854)}main{max-width:650px;margin:30px auto;padding:0 20px}.panel{padding:25px;border:1px solid var(--line);border-radius:18px;background:#fff;box-shadow:0 14px 38px rgba(18,48,72,.08)}h2{margin:0 0 5px;font-size:20px}p{margin:0 0 22px;color:var(--muted);font-size:12px;line-height:1.5}label{display:block;margin:14px 0 7px;color:#40566c;font-size:11px;font-weight:750}input{width:100%;height:46px;padding:0 13px;border:1px solid #cedae7;border-radius:11px;outline:none;font:inherit}input:focus{border-color:#35b97b;box-shadow:0 0 0 4px rgba(10,173,99,.1)}form .btn{width:100%;margin-top:20px}.message{min-height:18px;margin-top:12px;font-size:11px;text-align:center}.success{color:#087d5b}.error{color:#c63e4b}
+</style>
+<style id="typography-normalization">
+html,body{font-family:"Segoe UI",Tahoma,Arial,sans-serif!important;font-weight:400!important;text-shadow:none!important;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+body *{text-shadow:none!important}
+body :where(p,span,label,input,select,option,textarea,td,li,small,time,caption,legend){font-weight:400!important}
+body :where(h1,h2,h3,h4,h5,h6){font-weight:600!important;letter-spacing:-.01em}
+body :where(strong,b,th,.eyebrow,.kicker,.badge,.status){font-weight:600!important}
+body :where(button,.btn,[role="button"]){font-weight:500!important}
+</style><link rel="stylesheet" href="/global-buttons.css"><link rel="stylesheet" href="/global-layout.css"><link rel="icon" href="/assets/nexo-ti-icon.svg" type="image/svg+xml"><link rel="shortcut icon" href="/assets/nexo-ti-icon.svg"></head>
+<body>
+<header class="header"><div class="header-inner"><div class="brand"><h1>Minha conta</h1><p>Segurança e acesso ao sistema</p></div><a class="profile-back" href="/" aria-label="Voltar ao painel principal"><span class="profile-back-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></span><span class="profile-back-copy"><strong>Painel principal</strong><small>Voltar ao estoque</small></span></a></div></header>
+<main><section class="panel"><h2>Alterar minha senha</h2><p>Ao salvar, as sessões atuais serão encerradas e você deverá entrar novamente com a nova senha.</p>
+<form id="form"><label>Senha atual</label><input id="current" type="password" autocomplete="current-password" required><label>Nova senha</label><input id="next" type="password" autocomplete="new-password" required><label>Confirmar nova senha</label><input id="confirm" type="password" autocomplete="new-password" required><button class="btn btn-primary" id="save" type="submit">Alterar senha</button><div class="message" id="message"></div></form></section></main>
+<script>
+fetch("/api/auth/me",{cache:"no-store"}).then(function(r){if(!r.ok)location.replace("/login.html")});
+document.getElementById("form").addEventListener("submit",async function(event){
+ event.preventDefault();const message=document.getElementById("message"),button=document.getElementById("save");message.className="message";message.textContent="";
+ if(document.getElementById("next").value!==document.getElementById("confirm").value){message.classList.add("error");message.textContent="A confirmação da senha não confere.";return}
+ button.disabled=true;
+ try{const response=await fetch("/api/auth/change-password",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({currentPassword:document.getElementById("current").value,newPassword:document.getElementById("next").value})});const data=await response.json();if(!response.ok)throw new Error(data.mensagem||"Não foi possível alterar a senha.");message.classList.add("success");message.textContent=data.mensagem;setTimeout(function(){location.replace("/login.html")},1200)}catch(error){message.classList.add("error");message.textContent=error.message;button.disabled=false}
+});
+</script>
+</body></html>

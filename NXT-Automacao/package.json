@@ -1,0 +1,21 @@
+{
+  "name": "nxt-automacao",
+  "version": "1.2.0",
+  "description": "",
+  "main": "desktop.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node smoke-test.js && node security-test.js",
+    "security:test": "node security-test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "playwright": "^1.62.1",
+    "read-excel-file": "^9.3.10"
+  }
+}

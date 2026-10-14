@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Central de Ajuda · Nexo TI</title>
+<link rel="stylesheet" href="/global-layout.css"><link rel="stylesheet" href="/global-buttons.css">
+<style>
+:root{--navy:#061e31;--green:#0aad63;--green-dark:#087747;--ink:#172b3f;--muted:#687b90;--line:#dce5ee;--bg:#f3f6fa;font-family:"Segoe UI Variable Text","Segoe UI",Tahoma,Arial,sans-serif}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(800px 360px at 94% 0,#dff6e9,transparent 68%),var(--bg);color:var(--ink)}
+.header{color:#fff;background:linear-gradient(112deg,#001109,#042b17 52%,#087a45)}.header-inner{width:calc(100% - 48px);margin:auto;padding:18px 0;display:flex;align-items:center;justify-content:space-between;gap:18px}
+.brand{display:flex;align-items:center;gap:12px}.mark{width:44px;height:44px;display:grid;place-items:center;border:1px solid #ffffff45;border-radius:13px;background:#ffffff1c}.mark svg{width:22px}.brand h1{font-size:19px;margin:0 0 3px}.brand p{font-size:12px;margin:0;color:#ffffffb8}.header-actions{display:flex;gap:8px;align-items:center}
+.page{width:calc(100% - 48px);max-width:1460px;margin:auto;padding:24px 0 56px}.intro{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,420px);gap:18px;align-items:stretch;margin-bottom:18px}
+.hero,.progress-card,.panel{border:1px solid var(--line);background:#fff;border-radius:17px;box-shadow:0 8px 26px rgba(19,45,68,.055)}.hero{padding:24px}.eyebrow{display:block;margin-bottom:7px;color:#078b4e;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}.hero h2{font-size:29px;line-height:1.15;margin:0 0 9px}.hero p{max-width:760px;margin:0;color:var(--muted);font-size:15px;line-height:1.6}
+.progress-card{padding:21px}.progress-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.progress-head strong{font-size:16px}.progress-value{font-size:28px;font-weight:700;color:var(--green-dark)}.progress-track{height:9px;margin:14px 0 9px;border-radius:20px;background:#e8eef3;overflow:hidden}.progress-fill{width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#11c875,#078f51);transition:width .25s}.progress-meta{font-size:13px;color:var(--muted)}
+.toolbar{display:flex;gap:10px;margin:0 0 18px;padding:13px;border:1px solid var(--line);border-radius:14px;background:#fff}.toolbar input{flex:1;min-width:180px;height:44px;border:1px solid #cad8e5;border-radius:11px;padding:0 14px;font:inherit}.toolbar input:focus{outline:3px solid #0aad6320;border-color:#35b97b}
+.task-panel{margin-bottom:18px}.task-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.task-card{padding:14px;border:1px solid var(--line);border-radius:13px;background:#f9fbfc}.task-card span{display:block;margin-bottom:5px;color:#087747;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}.task-card strong{display:block;min-height:38px;font-size:14px;line-height:1.35}.task-card a{width:100%;margin-top:10px}@media(max-width:1100px){.task-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:760px){.task-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.task-grid{grid-template-columns:1fr}}
+.layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(290px,.65fr);gap:18px}.panel{padding:20px}.panel h3{font-size:19px;margin:0}.panel-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:15px}.panel-head p{margin:4px 0 0;color:var(--muted);font-size:13px}
+.lesson-list{display:grid;gap:10px}.lesson{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}.lesson summary{list-style:none;cursor:pointer;padding:16px;display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:13px;align-items:center}.lesson summary::-webkit-details-marker{display:none}.lesson-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:12px;background:#e9f8f0;color:#078650;font-size:19px}.lesson-title{display:block;font-size:15px;font-weight:600}.lesson-desc{display:block;margin-top:3px;color:var(--muted);font-size:13px}.lesson-status{padding:6px 9px;border-radius:20px;background:#edf2f6;color:#63758a;font-size:12px;white-space:nowrap}.lesson.done{border-color:#aee4c8}.lesson.done .lesson-status{background:#ddf7e9;color:#087747}.lesson-body{padding:0 16px 16px 71px}.lesson-body ol{margin:0 0 14px;padding-left:19px;color:#42576d;font-size:14px;line-height:1.65}.lesson-actions{display:flex;flex-wrap:wrap;gap:8px}
+.btn{min-height:42px;border:1px solid #cbd9e5;border-radius:10px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:7px;background:#fff;color:#173149;text-decoration:none;font:500 14px inherit;cursor:pointer}.btn:hover{background:#f6faf8;border-color:#9ccdb4}.btn-primary{border-color:#079854;background:linear-gradient(135deg,#12cc78,#079854);color:#fff}.btn-primary:hover{background:#078d50}.btn:focus-visible,summary:focus-visible{outline:3px solid #0aad6340;outline-offset:2px}
+.side{display:grid;gap:18px;align-content:start}.video-grid{display:grid;gap:10px}.video-card{padding:14px;border:1px solid var(--line);border-radius:13px;background:#f9fbfc}.video-top{display:flex;align-items:center;gap:10px}.play{width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:#e1f7eb;color:#087747}.video-card strong{display:block;font-size:14px}.video-card span{font-size:12px;color:var(--muted)}.video-card button{margin-top:10px}
+.quick-help{background:linear-gradient(145deg,#062c19,#087a45);color:#fff;border:0}.quick-help p{color:#d4f2e2;font-size:14px;line-height:1.55}.quick-help .btn{border-color:#ffffff42;background:#ffffff14;color:#fff}.quick-help .btn:hover{background:#ffffff24}
+.empty{display:none;padding:28px;text-align:center;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:22px;z-index:60;transform:translate(-50%,20px);padding:11px 16px;border-radius:10px;background:#102f4a;color:#fff;opacity:0;pointer-events:none;transition:.2s;font-size:14px}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:900px){.intro,.layout{grid-template-columns:1fr}.header-inner{align-items:flex-start;flex-direction:column}.header-actions{width:100%}.hero h2{font-size:25px}}
+@media(max-width:580px){.header-inner,.page{width:calc(100% - 24px)}.page{padding-top:14px}.hero,.progress-card,.panel{padding:16px}.toolbar{flex-direction:column}.toolbar .btn{width:100%}.lesson summary{grid-template-columns:38px minmax(0,1fr)}.lesson-icon{width:38px;height:38px}.lesson-status{grid-column:2;justify-self:start}.lesson-body{padding-left:16px}.header-actions{display:grid;grid-template-columns:1fr}.header-actions .btn{width:100%}}
+</style>
+</head>
+<body>
+<header class="header"><div class="header-inner"><div class="brand"><div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 18h.01M9.1 9a3 3 0 1 1 5.4 1.8c-1.3 1-2.5 1.7-2.5 3.2"/><circle cx="12" cy="12" r="10"/></svg></div><div><h1>Central de Ajuda</h1><p>Treinamento e guias rápidos do Nexo TI</p></div></div><div class="header-actions"><a class="btn" href="/central.html">Voltar à Central</a></div></div></header>
+<main class="page">
+<section class="intro"><div class="hero"><span class="eyebrow">Aprenda no seu ritmo</span><h2>Encontre a orientação certa para cada tarefa</h2><p>Comece pelo tutorial inicial ou abra diretamente o guia do módulo em que está trabalhando. Sua conclusão fica registrada no seu usuário.</p></div>
+<div class="progress-card" aria-live="polite"><div class="progress-head"><div><strong>Seu treinamento</strong><div class="progress-meta" id="progressCount">Carregando progresso...</div></div><div class="progress-value" id="progressValue">0%</div></div><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><div class="progress-meta" id="progressNext">Comece pelo tutorial inicial.</div></div></section>
+<div class="toolbar"><input id="searchHelp" type="search" placeholder="Buscar guia, módulo ou tarefa..." aria-label="Buscar na Central de Ajuda"><button class="btn" id="clearSearch" type="button">Limpar busca</button></div>
+<section class="panel task-panel"><div class="panel-head"><div><h3>Tutoriais por tarefa</h3><p>Escolha o que precisa fazer e acompanhe os destaques na tela real.</p></div></div><div class="task-grid" id="taskTours"></div></section><div class="layout"><section class="panel"><div class="panel-head"><div><h3>Guias rápidos por módulo</h3><p>Abra um guia, siga as etapas e marque como concluído.</p></div></div><div class="lesson-list" id="lessonList"></div><div class="empty" id="emptyState">Nenhum guia corresponde à sua busca.</div></section>
+<aside class="side"><section class="panel"><div class="panel-head"><div><h3>Tutoriais interativos</h3><p>Aprenda diretamente na tela, com cada campo e botão destacado.</p></div></div><div class="video-grid" id="videoList"></div></section>
+<section class="panel quick-help"><h3>Preciso de ajuda</h3><p>Não encontrou o que precisava? Copie os dados da tela atual e encaminhe ao suporte de TI para agilizar o atendimento.</p><button class="btn" id="copyDiagnostic" type="button">Copiar dados para suporte</button></section></aside></div>
+</main><div class="toast" id="toast" role="status"></div>
+<script src="/auth-ui.js"></script>
+<script>
+(function(){
+"use strict";
+const taskTours=[
+{module:"Central",title:"Conhecer indicadores e pendências",key:"getting-started",href:"/central.html"},
+{module:"Central",title:"Criar e acompanhar uma tarefa",key:"central-tasks",href:"/central.html"},
+{module:"Estoque",title:"Pesquisar e abrir um ativo",key:"stock-search",href:"/index.html"},
+{module:"Estoque",title:"Filtrar e exportar dados",key:"stock-export",href:"/index.html"},
+{module:"Toners",title:"Adicionar toner ao estoque",key:"toner-add",href:"/toner.html"},
+{module:"Toners",title:"Cadastrar uma impressora",key:"toner-printer-add",href:"/toner.html"},
+{module:"Toners",title:"Pesquisar e interpretar níveis",key:"toner-search",href:"/toner.html"},
+{module:"Toners",title:"Acompanhar uma troca",key:"toner-exchange",href:"/toner-operacao.html"},
+
+{module:"Colaboradores",title:"Importar a planilha",key:"collaborators-import",href:"/colaboradores.html"},
+{module:"Colaboradores",title:"Controlar férias e acessos",key:"collaborators-vacation",href:"/colaboradores.html"},
+{module:"Atividades",title:"Pesquisar e filtrar o histórico",key:"activities-search",href:"/atividades.html"},
+{module:"Relatórios",title:"Gerar e exportar um relatório",key:"reports-generate",href:"/relatorios.html"},
+{module:"Automações",title:"Configurar relatórios diários",key:"automations-daily",href:"/automacoes.html"},
+{module:"Automações",title:"Consultar execuções e falhas",key:"automations-history",href:"/automacoes.html"}
+];
+const lessons=[
+{key:"getting-started",icon:"✓",title:"Tutorial inicial",desc:"Conheça a navegação, os alertas e as tarefas do dia.",href:"/central.html",steps:["Abra a Central e confira os indicadores de atenção.","Use as guias superiores para alternar entre os módulos.","Abra uma pendência para consultar contexto e próxima ação.","Use o botão Preciso de ajuda em qualquer página quando tiver dúvida."],video:"Primeiros passos no Nexo TI",duration:"3 min"},
+{key:"stock",icon:"▣",title:"Estoque e movimentações",desc:"Consultar saldo, registrar movimentações e acompanhar reposição.",href:"/index.html",steps:["Pesquise o ativo ou a categoria antes de movimentar.","Confirme identificação, responsável e destino.","Finalize a movimentação e confira a mensagem de sucesso.","Consulte o relatório de movimentações para validar o registro."],video:"Movimentação segura de ativos",duration:"4 min"},
+{key:"toner",icon:"▤",title:"Toners e impressoras",desc:"Interpretar níveis, contadores e trocas identificadas.",href:"/toner.html",steps:["Confirme se a impressora aparece como Online.","Priorize os suprimentos em Pedir agora e Atenção.","Após uma troca, aguarde a nova leitura SNMP automática.","Confira data, hora e nível anterior no histórico de trocas."],video:"Leitura e troca automática de toner",duration:"4 min"},
+{key:"collaborators",icon:"♙",title:"Colaboradores e acessos",desc:"Importar planilha e acompanhar férias, retornos e desligamentos.",href:"/colaboradores.html",steps:["Carregue ou atualize a planilha de colaboradores.","Revise as pessoas destacadas para ação.","Confirme os acessos que precisam ser concedidos ou revogados.","Registre a conclusão para manter o histórico operacional."],video:"Rotina de colaboradores",duration:"3 min"},
+{key:"activities",icon:"↻",title:"Atividades e auditoria",desc:"Localizar acontecimentos e responsáveis na linha do tempo.",href:"/atividades.html",steps:["Defina o período que deseja analisar.","Filtre por usuário, módulo ou termo.","Abra os detalhes do registro para conferir a ação.","Use a paginação para avançar sem ocupar toda a tela."],video:"Como consultar atividades",duration:"2 min"},
+{key:"reports",icon:"▥",title:"Relatórios",desc:"Filtrar informações e exportar em PDF ou Excel.",href:"/relatorios.html",steps:["Escolha o tipo de relatório.","Informe o período correto e aplique os filtros.","Revise os resultados antes da exportação.","Exporte no formato adequado ao uso: PDF ou Excel."],video:"Gerando relatórios",duration:"3 min"},
+{key:"automations",icon:"⟳",title:"Automação e contingência",desc:"Acompanhar execuções, falhas, backups e reprocessamentos.",href:"/automacoes.html",steps:["Confira o resultado e o horário da última execução.","Abra a mensagem quando uma automação falhar.","Use Executar novamente somente após revisar o motivo.","Valide se o sistema preservou os últimos dados disponíveis."],video:"Monitoramento das automações",duration:"4 min"}
+];
+let progress={};
+const taskContainer=document.getElementById("taskTours");
+taskTours.forEach(function(item){const card=document.createElement("article");card.className="task-card";const module=document.createElement("span");module.textContent=item.module;const title=document.createElement("strong");title.textContent=item.title;const start=document.createElement("a");start.className="btn btn-primary";start.href=item.href+(item.href.includes("?")?"&":"?")+"tour="+encodeURIComponent(item.key);start.textContent="Iniciar passo a passo";card.append(module,title,start);taskContainer.appendChild(card);});
+const list=document.getElementById("lessonList"),videos=document.getElementById("videoList"),toast=document.getElementById("toast");
+function notify(message){toast.textContent=message;toast.classList.add("show");setTimeout(function(){toast.classList.remove("show");},2400)}
+function render(query){
+ const term=String(query||"").trim().toLocaleLowerCase("pt-BR"); list.textContent=""; videos.textContent="";
+ const visible=lessons.filter(function(item){return (item.title+" "+item.desc+" "+item.steps.join(" ")).toLocaleLowerCase("pt-BR").includes(term)});
+ document.getElementById("emptyState").style.display=visible.length?"none":"block";
+ visible.forEach(function(item){
+  const details=document.createElement("details");details.className="lesson"+(progress[item.key]&&progress[item.key].completed?" done":"");details.dataset.key=item.key;
+  const summary=document.createElement("summary");const status=progress[item.key]&&progress[item.key].completed?"Concluído":"Pendente";
+  summary.innerHTML='<span class="lesson-icon" aria-hidden="true">'+item.icon+'</span><span><span class="lesson-title"></span><span class="lesson-desc"></span></span><span class="lesson-status"></span>';
+  summary.querySelector(".lesson-title").textContent=item.title;summary.querySelector(".lesson-desc").textContent=item.desc;summary.querySelector(".lesson-status").textContent=status;
+  const body=document.createElement("div");body.className="lesson-body";const ol=document.createElement("ol");item.steps.forEach(function(step){const li=document.createElement("li");li.textContent=step;ol.appendChild(li)});
+  const actions=document.createElement("div");actions.className="lesson-actions";const open=document.createElement("a");open.className="btn";open.href=item.href;open.textContent="Abrir módulo";
+  const guided=document.createElement("a");guided.className="btn btn-primary";guided.href=item.href+(item.href.includes("?")?"&":"?")+"tour="+encodeURIComponent(item.key);guided.textContent="Iniciar tutorial";
+  const complete=document.createElement("button");complete.className="btn";complete.type="button";complete.textContent=status==="Concluído"?"Marcar para revisão":"Marcar como concluído";complete.addEventListener("click",function(){save(item.key,status!=="Concluído")});
+  actions.append(open,guided,complete);body.append(ol,actions);details.append(summary,body);list.appendChild(details);
+  const video=document.createElement("article");video.className="video-card";video.innerHTML='<div class="video-top"><span class="play" aria-hidden="true">▶</span><div><strong></strong><span></span></div></div><button class="btn" type="button">Iniciar destaque</button>';
+  video.querySelector("strong").textContent=item.video;video.querySelector(".video-top div span").textContent=item.steps.length+" etapas · na tela real";video.querySelector("button").addEventListener("click",function(){window.location.href=item.href+(item.href.includes("?")?"&":"?")+"tour="+encodeURIComponent(item.key)});videos.appendChild(video);
+ });
+}
+function updateProgress(){
+ const count=lessons.filter(function(item){return progress[item.key]&&progress[item.key].completed}).length,pct=Math.round(count*100/lessons.length);
+ document.getElementById("progressValue").textContent=pct+"%";document.getElementById("progressFill").style.width=pct+"%";document.getElementById("progressCount").textContent=count+" de "+lessons.length+" guias concluídos";
+ document.getElementById("progressNext").textContent=count===lessons.length?"Treinamento concluído. Você pode revisar qualquer guia.":"Próximo: "+lessons.find(function(item){return !progress[item.key]||!progress[item.key].completed}).title+".";
+}
+async function loadProgress(){
+ const controller=new AbortController(),timeout=setTimeout(function(){controller.abort();},8000);
+ try{
+  const response=await fetch("/api/auth/training-progress",{cache:"no-store",signal:controller.signal});
+  if(response.status===401){window.location.replace("/login.html");return;}
+  if(!response.ok)throw new Error();
+  const data=await response.json();progress=data.progress||{};
+  if(!progress["welcome-seen"])fetch("/api/auth/training-progress/welcome-seen",{method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify({completed:true})}).catch(function(){});
+ }catch(error){notify(error.name==="AbortError"?"A consulta demorou. Exibindo os guias disponíveis.":"Não foi possível carregar o progresso.");}
+ finally{clearTimeout(timeout);updateProgress();render(document.getElementById("searchHelp").value);}
+}
+async function save(key,completed){try{const response=await fetch("/api/auth/training-progress/"+encodeURIComponent(key),{method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify({completed:completed})});const data=await response.json();if(!response.ok)throw new Error(data.mensagem||"Falha ao salvar.");progress[key]={completed:completed,completedAt:data.completedAt||""};updateProgress();render(document.getElementById("searchHelp").value);notify(completed?"Treinamento concluído e registrado.":"Guia marcado para revisão.");}catch(error){notify(error.message||"Não foi possível salvar.")}}
+document.getElementById("searchHelp").addEventListener("input",function(){render(this.value)});document.getElementById("clearSearch").addEventListener("click",function(){document.getElementById("searchHelp").value="";render("")});
+document.getElementById("copyDiagnostic").addEventListener("click",async function(){const text=["Nexo TI — solicitação de ajuda","Usuário: "+((window.NXT_CURRENT_USER&&window.NXT_CURRENT_USER.username)||"não identificado"),"Página: "+location.href,"Data: "+new Date().toLocaleString("pt-BR"),"Navegador: "+navigator.userAgent].join("\n");try{await navigator.clipboard.writeText(text);notify("Dados copiados. Encaminhe ao suporte de TI.");}catch{notify("Não foi possível copiar automaticamente.")}});
+loadProgress();
+})();
+</script></body></html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Configuração inicial</title>
+  <style>
+    :root{font-family:Inter,"Segoe UI",Arial,sans-serif;color:#10233f;background:#f3f7fb}*{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;padding:26px;background:radial-gradient(circle at 90% 0,#d8f5f5 0,transparent 40%),radial-gradient(circle at 0 100%,#e5efff 0,transparent 42%),#f3f7fb}
+    main{width:min(100%,470px);padding:30px;border:1px solid #d9e4ef;border-radius:24px;background:rgba(255,255,255,.96);box-shadow:0 24px 70px rgba(16,35,63,.13)}
+    .top{display:flex;align-items:center;gap:15px}.icon{width:52px;height:52px;flex:0 0 auto;border-radius:16px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,#176ee8,#087d82);box-shadow:0 12px 28px rgba(23,110,232,.24);font-size:23px}
+    .eyebrow{color:#1673d9;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}h1{margin:5px 0 0;font-size:24px;letter-spacing:-.035em}p{margin:18px 0 22px;color:#677991;font-size:13px;line-height:1.55}
+    .steps{display:flex;gap:7px;margin-bottom:20px}.step{flex:1;padding:9px;border-radius:10px;color:#526982;background:#edf3f9;font-size:10px;font-weight:700;text-align:center}.step.active{color:#0d65c8;background:#e7f1ff}
+    .grid{display:grid;grid-template-columns:1fr 112px;gap:12px}label{display:block;margin:13px 0 7px;color:#344967;font-size:11px;font-weight:750}.field.full{grid-column:1/-1}
+    input{width:100%;height:46px;padding:0 13px;border:1px solid #cddbea;border-radius:12px;outline:none;font:inherit;background:#fbfdff}input:focus{border-color:#2a78e7;box-shadow:0 0 0 4px rgba(42,120,231,.1)}
+    .hint{margin-top:6px;color:#8898ac;font-size:10px;line-height:1.4}button{width:100%;height:48px;margin-top:21px;border:0;border-radius:13px;color:#fff;background:linear-gradient(135deg,#176ee8,#087d82);font:700 13px inherit;cursor:pointer;box-shadow:0 10px 24px rgba(23,110,232,.2)}button:disabled{opacity:.65;cursor:wait}
+    .message{min-height:18px;margin-top:11px;color:#c63e4b;font-size:11px;text-align:center}.secure{margin-top:15px;color:#8393a8;font-size:10px;line-height:1.45;text-align:center}
+  </style>
+</head>
+<body>
+  <main>
+    <div class="top"><div class="icon">◆</div><div><div class="eyebrow">Central de Operações de TI</div><h1>Configurar o servidor</h1></div></div>
+    <p>Defina como o sistema será acessado na rede e conecte a atualização automática ao NXT4Insight.</p>
+    <div class="steps"><div class="step active">1 · Servidor e NXT</div><div class="step">2 · Master Admin</div><div class="step">3 · Acesso liberado</div></div>
+    <form id="form">
+      <div class="grid">
+        <div class="field"><label for="email">Usuário ou e-mail NXT</label><input id="email" autocomplete="username" required></div>
+        <div class="field"><label for="port">Porta</label><input id="port" type="number" min="1024" max="65535" value="3000" required><div class="hint">Recomendado: 3000</div></div>
+        <div class="field full"><label for="password">Senha NXT</label><input id="password" type="password" autocomplete="current-password" required></div>
+        <div class="field full"><label for="snmpCommunity">Comunidade SNMP</label><input id="snmpCommunity" type="password" autocomplete="off" required><div class="hint">Credencial somente leitura configurada nas impressoras.</div></div>
+      </div>
+      <button id="submit" type="submit">Salvar e criar Master Admin</button>
+      <div class="message" id="message"></div>
+    </form>
+    <div class="secure">A senha do NXT fica apenas neste servidor. Após salvar, você criará o usuário Master Admin, cuja senha será protegida por hash.</div>
+  </main>
+  <script>
+    const params=new URLSearchParams(location.search);
+    const primeiroAcesso=params.get("primeiroAcesso")==="1";
+    const form=document.getElementById("form"),message=document.getElementById("message"),submit=document.getElementById("submit");
+    if(!primeiroAcesso) submit.textContent="Salvar configurações";
+    window.nxtDesktop.obterConfiguracao().then(function(config){
+      document.getElementById("email").value=config.email||"";
+      document.getElementById("port").value=config.port||3000;
+      document.getElementById("snmpCommunity").value=config.snmpCommunity||"";
+    });
+    form.addEventListener("submit",async function(event){
+      event.preventDefault();message.textContent="";submit.disabled=true;submit.textContent="Salvando...";
+      try{
+        await window.nxtDesktop.salvarConfiguracao({
+          email:document.getElementById("email").value,
+          password:document.getElementById("password").value,
+          snmpCommunity:document.getElementById("snmpCommunity").value,
+          port:Number(document.getElementById("port").value),
+          primeiroAcesso:primeiroAcesso
+        });
+      }catch(erro){
+        message.textContent=erro.message;submit.disabled=false;
+        submit.textContent=primeiroAcesso?"Salvar e criar Master Admin":"Salvar configurações";
+      }
+    });
+  </script>
+</body>
+</html>

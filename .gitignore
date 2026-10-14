@@ -1,0 +1,22 @@
+# Dependências instaladas localmente
+NXT-Automacao/node_modules/
+
+# Credenciais e configurações locais
+NXT-Automacao/.env
+NXT-Automacao/.env.*
+!NXT-Automacao/.env.example
+
+# Dados corporativos e evidências de erro
+NXT-Automacao/dados/*.xlsx
+NXT-Automacao/dados/*.xls
+NXT-Automacao/dados/*.db
+NXT-Automacao/dados/*.db-*
+NXT-Automacao/dados/toner-atual.json
+NXT-Automacao/erros/*.png
+NXT-Automacao/erros/*.jpg
+NXT-Automacao/erros/*.jpeg
+
+# Arquivos temporários
+*.log
+Thumbs.db
+.DS_Store

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Nexo TI">
+  <rect width="512" height="512" rx="92" fill="#00172a"/>
+  <g fill="none" stroke="#0aad63" stroke-width="25" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M256 73 405 132v150c0 91-59 139-149 176-90-37-149-85-149-176V132z"/>
+    <path d="M256 91 119 361M256 91l137 270M119 361h274"/>
+    <circle cx="256" cy="91" r="24" fill="#00172a"/>
+    <circle cx="119" cy="361" r="24" fill="#00172a"/>
+    <circle cx="393" cy="361" r="24" fill="#00172a"/>
+    <path d="M256 175c49 0 89 40 89 89 0 28-13 52-33 68"/>
+    <path d="M312 332c-42 24-97 10-122-33-14-24-15-51-6-75"/>
+    <path d="M184 224c24-42 79-57 121-32 24 14 39 36 44 61"/>
+  </g>
+</svg>
