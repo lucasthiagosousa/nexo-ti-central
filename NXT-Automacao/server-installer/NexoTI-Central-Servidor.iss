@@ -56,7 +56,6 @@ Name: "desktopicon"; Description: "Criar atalho na Área de Trabalho"; GroupDesc
 Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -NonInteractive -ExecutionPolicy Bypass -File ""{app}\service\Configure-Server.ps1"" -Port {code:GetPort}"; StatusMsg: "Protegendo dados e iniciando o servidor..."; Flags: runhidden waituntilterminated; Check: IsFreshInstall
 Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -NonInteractive -ExecutionPolicy Bypass -File ""{app}\service\Configure-Server.ps1"" -Port {code:GetPort} -VerifyOnly"; StatusMsg: "Validando o servidor..."; Flags: runhidden waituntilterminated; Check: IsFreshInstall
 Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -NonInteractive -ExecutionPolicy Bypass -File ""{app}\service\Configure-Server.ps1"" -Port {code:GetPort} -DeferStart"; StatusMsg: "Finalizando a atualização do servidor..."; Flags: runhidden waituntilterminated; Check: IsUpgradeInstall
-Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -Command ""Start-Sleep -Seconds 8; 1..6 | ForEach-Object {{ sc.exe start NexoTICentral 2>$null | Out-Null; Start-Sleep -Seconds 4; if ((Get-Service NexoTICentral -ErrorAction SilentlyContinue).Status -eq 'Running') {{ return } }"""; Flags: runhidden nowait; Check: IsUpgradeInstall
 Filename: "http://localhost:{code:GetPort}/setup.html"; Description: "Abrir configuração inicial"; Flags: shellexec postinstall nowait skipifsilent
 
 [UninstallRun]
@@ -358,3 +357,4 @@ begin
       'Os dados permanecem em C:\ProgramData\NexoTI\CentralOperacoes.';
   end;
 end;
+
