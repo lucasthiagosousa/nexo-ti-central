@@ -82,35 +82,38 @@ else {
   }
 }
 
-$installedService = Get-Service -Name $serviceName -ErrorAction Stop
+# Use sc.exe e consultas novas a cada tentativa. Isso evita o cache interno de
+# ServiceController observado durante uma atualização executada pelo Inno Setup.
+$startOutput = & sc.exe start $serviceName 2>&1
+$startExitCode = $LASTEXITCODE
+if ($startExitCode -ne 0 -and ($startOutput -join " ") -notmatch "1056") {
+  throw "Não foi possível iniciar o serviço $serviceName. Código: $startExitCode. Detalhes: $($startOutput -join ' ')"
+}
 
-# O Service Control Manager é a fonte de verdade para iniciar e validar o serviço.
-# O comando 'start' do wrapper pode retornar antes de o Windows estabilizar o processo.
-Start-Service -Name $serviceName -ErrorAction Stop
-
+$serviceStatus = $null
 for ($attempt = 1; $attempt -le 30; $attempt++) {
   Start-Sleep -Milliseconds 500
-  $installedService.Refresh()
-  if ($installedService.Status -eq "Running") {
+  $serviceStatus = (Get-Service -Name $serviceName -ErrorAction Stop).Status
+  if ($serviceStatus -eq "Running") {
     break
   }
 }
 
-if ($installedService.Status -ne "Running") {
-  throw "O serviço $serviceName foi registrado, mas não iniciou. Estado: $($installedService.Status)."
+if ($serviceStatus -ne "Running") {
+  throw "O serviço $serviceName foi registrado, mas não iniciou. Estado: $serviceStatus."
 }
 
 # Confirma que o processo não iniciou e caiu imediatamente.
 Start-Sleep -Seconds 3
-$installedService.Refresh()
-if ($installedService.Status -ne "Running") {
+$serviceStatus = (Get-Service -Name $serviceName -ErrorAction Stop).Status
+if ($serviceStatus -ne "Running") {
   $errorLog = Join-Path $DataRoot "logs\NexoTICentral.err.log"
   $details = if (Test-Path $errorLog) {
     (Get-Content $errorLog -Tail 20 -ErrorAction SilentlyContinue) -join " | "
   } else {
     "log de erro ainda não criado"
   }
-  throw "O serviço $serviceName iniciou, mas foi encerrado. Estado: $($installedService.Status). Detalhes: $details"
+  throw "O serviço $serviceName iniciou, mas foi encerrado. Estado: $serviceStatus. Detalhes: $details"
 }
 
 Write-Host "Pasta persistente: $DataRoot"
