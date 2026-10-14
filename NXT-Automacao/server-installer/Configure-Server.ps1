@@ -89,8 +89,9 @@ $startDiagnostics = @()
 $serviceStatus = "Stopped"
 
 for ($cycle = 1; $cycle -le 5; $cycle++) {
-  $scOutput = & sc.exe start $serviceName 2>&1
-  $startDiagnostics += "sc.exe tentativa $cycle (código $LASTEXITCODE): $($scOutput -join ' ')"
+  $scOutput = & cmd.exe /d /c "sc.exe start $serviceName 2>&1"
+  $scExitCode = $LASTEXITCODE
+  $startDiagnostics += "sc.exe tentativa $cycle (código $scExitCode): $($scOutput -join ' ')"
   Start-Sleep -Seconds 2
 
   $serviceStatus = (Get-Service -Name $serviceName -ErrorAction Stop).Status
@@ -98,8 +99,10 @@ for ($cycle = 1; $cycle -le 5; $cycle++) {
     break
   }
 
-  $wrapperOutput = & $serviceExe start 2>&1
-  $startDiagnostics += "WinSW tentativa $cycle (código $LASTEXITCODE): $($wrapperOutput -join ' ')"
+  $wrapperCommand = '"{0}" start 2>&1' -f $serviceExe
+  $wrapperOutput = & cmd.exe /d /c $wrapperCommand
+  $wrapperExitCode = $LASTEXITCODE
+  $startDiagnostics += "WinSW tentativa $cycle (código $wrapperExitCode): $($wrapperOutput -join ' ')"
 
   for ($attempt = 1; $attempt -le 10; $attempt++) {
     Start-Sleep -Milliseconds 500
