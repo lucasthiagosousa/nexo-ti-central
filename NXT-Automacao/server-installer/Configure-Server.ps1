@@ -85,6 +85,39 @@ else {
 }
 
 if ($DeferStart) {
+  $taskName = "NexoTI-StartAfterUpdate"
+  $deferredScriptPath = Join-Path $DataRoot "Start-After-Update.ps1"
+  $deferredScript = @'
+Start-Sleep -Seconds 8
+for ($attempt = 1; $attempt -le 12; $attempt++) {
+  & sc.exe start NexoTICentral 2>$null | Out-Null
+  Start-Sleep -Seconds 4
+  try {
+    $response = Invoke-WebRequest -Uri "http://127.0.0.1:3000/login.html" -UseBasicParsing -TimeoutSec 3
+    if ($response.StatusCode -ge 200 -and $response.StatusCode -lt 400) {
+      break
+    }
+  }
+  catch {
+  }
+}
+& schtasks.exe /Delete /TN "NexoTI-StartAfterUpdate" /F 2>$null | Out-Null
+Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction SilentlyContinue
+'@
+
+  Set-Content -Path $deferredScriptPath -Value $deferredScript -Encoding UTF8
+  & schtasks.exe /Delete /TN $taskName /F 2>$null | Out-Null
+  $taskCommand = "powershell.exe -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$deferredScriptPath`""
+  $taskOutput = & schtasks.exe /Create /TN $taskName /SC ONSTART /TR $taskCommand /RU SYSTEM /RL HIGHEST /F 2>&1
+  if ($LASTEXITCODE -ne 0) {
+    throw "Não foi possível agendar a retomada do serviço: $($taskOutput -join ' ')"
+  }
+
+  $runOutput = & schtasks.exe /Run /TN $taskName 2>&1
+  if ($LASTEXITCODE -ne 0) {
+    throw "Não foi possível iniciar a tarefa de retomada do serviço: $($runOutput -join ' ')"
+  }
+
   Write-Host "Configuração concluída. O serviço será iniciado após o instalador encerrar."
   exit 0
 }
