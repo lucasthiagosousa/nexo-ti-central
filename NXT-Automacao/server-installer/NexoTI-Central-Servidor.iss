@@ -40,7 +40,8 @@ Name: "{commonappdata}\NexoTI\CentralOperacoes\logs"; Permissions: admins-full s
 Source: "{#StageDir}\app\*"; DestDir: "{app}\app"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#StageDir}\runtime\*"; DestDir: "{app}\runtime"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#StageDir}\browsers\*"; DestDir: "{app}\browsers"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{#StageDir}\service\*"; DestDir: "{app}\service"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#StageDir}\service\NexoTICentral.exe"; DestDir: "{app}\service"; Flags: ignoreversion onlyifdoesntexist
+Source: "{#StageDir}\service\*"; Excludes: "NexoTICentral.exe"; DestDir: "{app}\service"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\Abrir Central de Operações"; Filename: "http://localhost:{code:GetPort}/login.html"; IconFilename: "{app}\app\public\assets\nexo-ti-icon.ico"
