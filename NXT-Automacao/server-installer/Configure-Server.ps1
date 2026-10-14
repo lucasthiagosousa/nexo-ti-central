@@ -69,16 +69,31 @@ if ($existingService) {
     Start-Sleep -Seconds 1
   }
 
-  & $serviceExe uninstall | Out-Null
+  # Libera explicitamente o handle do ServiceController. Enquanto este objeto
+  # permanece vivo, o Windows pode manter o serviço marcado para exclusão e
+  # impedir que a atualização registre a nova versão no mesmo caminho.
+  $existingService.Dispose()
+  $existingService = $null
+  [GC]::Collect()
+  [GC]::WaitForPendingFinalizers()
 
-  for ($attempt = 1; $attempt -le 30; $attempt++) {
-    if (-not (Get-Service -Name $serviceName -ErrorAction SilentlyContinue)) {
+  $uninstallOutput = & $serviceExe uninstall 2>&1
+  $uninstallExitCode = $LASTEXITCODE
+  if ($uninstallExitCode -ne 0) {
+    throw "Não foi possível remover o registro anterior do serviço. Código: $uninstallExitCode. Detalhes: $($uninstallOutput -join ' ')"
+  }
+
+  $serviceRemoved = $false
+  for ($attempt = 1; $attempt -le 60; $attempt++) {
+    & sc.exe query $serviceName 2>&1 | Out-Null
+    if ($LASTEXITCODE -eq 1060) {
+      $serviceRemoved = $true
       break
     }
     Start-Sleep -Milliseconds 500
   }
 
-  if (Get-Service -Name $serviceName -ErrorAction SilentlyContinue) {
+  if (-not $serviceRemoved) {
     throw "O Windows não concluiu a remoção do registro anterior do serviço."
   }
 }
