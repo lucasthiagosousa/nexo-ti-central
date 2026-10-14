@@ -304,6 +304,13 @@ end;
 
 function PrepareToInstall(var NeedsRestart: Boolean): string;
 begin
+  { Neste ponto o diretório final já foi resolvido; confirme novamente o modo
+    de atualização antes de copiar qualquer arquivo. }
+  ExistingInstallation :=
+    ExistingInstallation or
+    RegKeyExists(HKLM64, 'SYSTEM\CurrentControlSet\Services\NexoTICentral') or
+    FileExists(ExpandConstant('{app}\service\NexoTICentral.exe'));
+
   StopPreviousService;
 
   if not EnsurePersistentDataAccess then
@@ -321,7 +328,9 @@ end;
 
 procedure InitializeWizard;
 begin
-  ExistingInstallation := FileExists(ExpandConstant('{uninstallexe}'));
+  ExistingInstallation :=
+    RegKeyExists(HKLM64, 'SYSTEM\CurrentControlSet\Services\NexoTICentral') or
+    FileExists(ExpandConstant('{autopf}\Nexo TI\Central de Operacoes\service\NexoTICentral.exe'));
 
   ServerPage := CreateInputQueryPage(
     wpSelectDir,
