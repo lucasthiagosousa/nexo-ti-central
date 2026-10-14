@@ -5,7 +5,9 @@ param(
 
   [string]$DataRoot = "$env:ProgramData\NexoTI\CentralOperacoes",
 
-  [switch]$VerifyOnly
+  [switch]$VerifyOnly,
+
+  [switch]$DeferStart
 )
 
 $ErrorActionPreference = "Stop"
@@ -80,6 +82,11 @@ else {
   if ($installExitCode -ne 0) {
     throw "Não foi possível registrar o serviço $serviceName. Código: $installExitCode. Detalhes: $($installOutput -join ' ')"
   }
+}
+
+if ($DeferStart) {
+  Write-Host "Configuração concluída. O serviço será iniciado após o instalador encerrar."
+  exit 0
 }
 
 # Durante uma atualização, o SCM pode manter o serviço em transição por alguns
