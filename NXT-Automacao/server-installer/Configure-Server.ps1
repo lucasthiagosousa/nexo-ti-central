@@ -83,59 +83,86 @@ else {
 }
 
 # Durante uma atualização, o SCM pode manter o serviço em transição por alguns
-# segundos mesmo após informar Stopped. Tente pelos dois caminhos suportados e
-# consulte uma nova instância de ServiceController em cada ciclo.
-$startDiagnostics = @()
-$serviceStatus = "Stopped"
+# segundos. Valide estabilidade real, não apenas o estado Running momentâneo.
+function Start-NexoServiceStable {
+  param([int]$Cycles = 5)
 
-for ($cycle = 1; $cycle -le 5; $cycle++) {
-  $scOutput = & cmd.exe /d /c "sc.exe start $serviceName 2>&1"
-  $scExitCode = $LASTEXITCODE
-  $startDiagnostics += "sc.exe tentativa $cycle (código $scExitCode): $($scOutput -join ' ')"
-  Start-Sleep -Seconds 2
+  $diagnostics = @()
+  $status = "Stopped"
 
-  $serviceStatus = (Get-Service -Name $serviceName -ErrorAction Stop).Status
-  if ($serviceStatus -eq "Running") {
-    break
-  }
+  for ($cycle = 1; $cycle -le $Cycles; $cycle++) {
+    $scOutput = & cmd.exe /d /c "sc.exe start $serviceName 2>&1"
+    $scExitCode = $LASTEXITCODE
+    $diagnostics += "sc.exe tentativa $cycle (código $scExitCode): $($scOutput -join ' ')"
 
-  $wrapperCommand = '"{0}" start 2>&1' -f $serviceExe
-  $wrapperOutput = & cmd.exe /d /c $wrapperCommand
-  $wrapperExitCode = $LASTEXITCODE
-  $startDiagnostics += "WinSW tentativa $cycle (código $wrapperExitCode): $($wrapperOutput -join ' ')"
-
-  for ($attempt = 1; $attempt -le 10; $attempt++) {
-    Start-Sleep -Milliseconds 500
-    $serviceStatus = (Get-Service -Name $serviceName -ErrorAction Stop).Status
-    if ($serviceStatus -eq "Running") {
-      break
+    for ($attempt = 1; $attempt -le 10; $attempt++) {
+      Start-Sleep -Milliseconds 500
+      $status = (Get-Service -Name $serviceName -ErrorAction Stop).Status
+      if ($status -eq "Running") { break }
     }
+
+    if ($status -eq "Running") {
+      Start-Sleep -Seconds 4
+      $status = (Get-Service -Name $serviceName -ErrorAction Stop).Status
+      if ($status -eq "Running") {
+        return [PSCustomObject]@{ Status = $status; Diagnostics = $diagnostics }
+      }
+    }
+
+    $wrapperCommand = '"{0}" start 2>&1' -f $serviceExe
+    $wrapperOutput = & cmd.exe /d /c $wrapperCommand
+    $wrapperExitCode = $LASTEXITCODE
+    $diagnostics += "WinSW tentativa $cycle (código $wrapperExitCode): $($wrapperOutput -join ' ')"
+    Start-Sleep -Seconds 2
   }
 
-  if ($serviceStatus -eq "Running") {
-    break
+  return [PSCustomObject]@{
+    Status = (Get-Service -Name $serviceName -ErrorAction SilentlyContinue).Status
+    Diagnostics = $diagnostics
   }
-
-  Start-Sleep -Seconds 2
 }
 
-if ($serviceStatus -ne "Running") {
+$startResult = Start-NexoServiceStable
+
+if ($startResult.Status -ne "Running") {
+  # Recuperação controlada: como o host WinSW é preservado na atualização,
+  # recrie somente o registro quando ele não voltar de forma estável.
+  $repairDiagnostics = @($startResult.Diagnostics)
+  $stopCommand = '"{0}" stop 2>&1' -f $serviceExe
+  $repairDiagnostics += (& cmd.exe /d /c $stopCommand)
+  $uninstallCommand = '"{0}" uninstall 2>&1' -f $serviceExe
+  $repairDiagnostics += (& cmd.exe /d /c $uninstallCommand)
+
+  for ($attempt = 1; $attempt -le 60; $attempt++) {
+    if (-not (Get-Service -Name $serviceName -ErrorAction SilentlyContinue)) { break }
+    Start-Sleep -Milliseconds 500
+  }
+
+  if (Get-Service -Name $serviceName -ErrorAction SilentlyContinue) {
+    $diagnosticLog = Join-Path $DataRoot "logs\instalacao-servico.log"
+    $repairDiagnostics | Set-Content -Path $diagnosticLog -Encoding UTF8
+    throw "O Windows não liberou o registro anterior do serviço. Consulte $diagnosticLog."
+  }
+
+  $installCommand = '"{0}" install 2>&1' -f $serviceExe
+  $installOutput = & cmd.exe /d /c $installCommand
+  $installExitCode = $LASTEXITCODE
+  $repairDiagnostics += "Reinstalação WinSW (código $installExitCode): $($installOutput -join ' ')"
+  if ($installExitCode -ne 0) {
+    $diagnosticLog = Join-Path $DataRoot "logs\instalacao-servico.log"
+    $repairDiagnostics | Set-Content -Path $diagnosticLog -Encoding UTF8
+    throw "Não foi possível reparar o registro do serviço. Consulte $diagnosticLog."
+  }
+
+  $repairedStart = Start-NexoServiceStable
+  $repairDiagnostics += $repairedStart.Diagnostics
+  $startResult = [PSCustomObject]@{ Status = $repairedStart.Status; Diagnostics = $repairDiagnostics }
+}
+
+if ($startResult.Status -ne "Running") {
   $diagnosticLog = Join-Path $DataRoot "logs\instalacao-servico.log"
-  $startDiagnostics | Set-Content -Path $diagnosticLog -Encoding UTF8
-  throw "O serviço $serviceName foi registrado, mas não iniciou. Estado: $serviceStatus. Consulte $diagnosticLog."
-}
-
-# Confirma que o processo não iniciou e caiu imediatamente.
-Start-Sleep -Seconds 3
-$serviceStatus = (Get-Service -Name $serviceName -ErrorAction Stop).Status
-if ($serviceStatus -ne "Running") {
-  $errorLog = Join-Path $DataRoot "logs\NexoTICentral.err.log"
-  $details = if (Test-Path $errorLog) {
-    (Get-Content $errorLog -Tail 20 -ErrorAction SilentlyContinue) -join " | "
-  } else {
-    "log de erro ainda não criado"
-  }
-  throw "O serviço $serviceName iniciou, mas foi encerrado. Estado: $serviceStatus. Detalhes: $details"
+  $startResult.Diagnostics | Set-Content -Path $diagnosticLog -Encoding UTF8
+  throw "O serviço $serviceName não permaneceu ativo. Estado: $($startResult.Status). Consulte $diagnosticLog."
 }
 
 Write-Host "Pasta persistente: $DataRoot"
