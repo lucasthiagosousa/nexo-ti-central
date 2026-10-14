@@ -82,25 +82,44 @@ else {
   }
 }
 
-# Use sc.exe e consultas novas a cada tentativa. Isso evita o cache interno de
-# ServiceController observado durante uma atualização executada pelo Inno Setup.
-$startOutput = & sc.exe start $serviceName 2>&1
-$startExitCode = $LASTEXITCODE
-if ($startExitCode -ne 0 -and ($startOutput -join " ") -notmatch "1056") {
-  throw "Não foi possível iniciar o serviço $serviceName. Código: $startExitCode. Detalhes: $($startOutput -join ' ')"
-}
+# Durante uma atualização, o SCM pode manter o serviço em transição por alguns
+# segundos mesmo após informar Stopped. Tente pelos dois caminhos suportados e
+# consulte uma nova instância de ServiceController em cada ciclo.
+$startDiagnostics = @()
+$serviceStatus = "Stopped"
 
-$serviceStatus = $null
-for ($attempt = 1; $attempt -le 30; $attempt++) {
-  Start-Sleep -Milliseconds 500
+for ($cycle = 1; $cycle -le 5; $cycle++) {
+  $scOutput = & sc.exe start $serviceName 2>&1
+  $startDiagnostics += "sc.exe tentativa $cycle (código $LASTEXITCODE): $($scOutput -join ' ')"
+  Start-Sleep -Seconds 2
+
   $serviceStatus = (Get-Service -Name $serviceName -ErrorAction Stop).Status
   if ($serviceStatus -eq "Running") {
     break
   }
+
+  $wrapperOutput = & $serviceExe start 2>&1
+  $startDiagnostics += "WinSW tentativa $cycle (código $LASTEXITCODE): $($wrapperOutput -join ' ')"
+
+  for ($attempt = 1; $attempt -le 10; $attempt++) {
+    Start-Sleep -Milliseconds 500
+    $serviceStatus = (Get-Service -Name $serviceName -ErrorAction Stop).Status
+    if ($serviceStatus -eq "Running") {
+      break
+    }
+  }
+
+  if ($serviceStatus -eq "Running") {
+    break
+  }
+
+  Start-Sleep -Seconds 2
 }
 
 if ($serviceStatus -ne "Running") {
-  throw "O serviço $serviceName foi registrado, mas não iniciou. Estado: $serviceStatus."
+  $diagnosticLog = Join-Path $DataRoot "logs\instalacao-servico.log"
+  $startDiagnostics | Set-Content -Path $diagnosticLog -Encoding UTF8
+  throw "O serviço $serviceName foi registrado, mas não iniciou. Estado: $serviceStatus. Consulte $diagnosticLog."
 }
 
 # Confirma que o processo não iniciou e caiu imediatamente.
