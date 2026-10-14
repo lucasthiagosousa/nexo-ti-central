@@ -64,44 +64,22 @@ if (-not (Test-Path $serviceExe)) {
 
 $existingService = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
 if ($existingService) {
+  # Em atualizações, o caminho do serviço permanece o mesmo. Reutilizar o
+  # registro existente evita o estado transitório do SCM em que o wrapper
+  # aparece como Running, mas o processo Node não é iniciado.
   if ($existingService.Status -ne "Stopped") {
-    & $serviceExe stop | Out-Null
-    Start-Sleep -Seconds 1
+    Stop-Service -Name $serviceName -Force -ErrorAction Stop
+    $existingService.WaitForStatus("Stopped", [TimeSpan]::FromSeconds(30))
   }
-
-  # Libera explicitamente o handle do ServiceController. Enquanto este objeto
-  # permanece vivo, o Windows pode manter o serviço marcado para exclusão e
-  # impedir que a atualização registre a nova versão no mesmo caminho.
   $existingService.Dispose()
   $existingService = $null
-  [GC]::Collect()
-  [GC]::WaitForPendingFinalizers()
-
-  $uninstallOutput = & $serviceExe uninstall 2>&1
-  $uninstallExitCode = $LASTEXITCODE
-  if ($uninstallExitCode -ne 0) {
-    throw "Não foi possível remover o registro anterior do serviço. Código: $uninstallExitCode. Detalhes: $($uninstallOutput -join ' ')"
-  }
-
-  $serviceRemoved = $false
-  for ($attempt = 1; $attempt -le 60; $attempt++) {
-    & sc.exe query $serviceName 2>&1 | Out-Null
-    if ($LASTEXITCODE -eq 1060) {
-      $serviceRemoved = $true
-      break
-    }
-    Start-Sleep -Milliseconds 500
-  }
-
-  if (-not $serviceRemoved) {
-    throw "O Windows não concluiu a remoção do registro anterior do serviço."
-  }
 }
-
-$installOutput = & $serviceExe install 2>&1
-$installExitCode = $LASTEXITCODE
-if ($installExitCode -ne 0) {
-  throw "Não foi possível registrar o serviço $serviceName. Código: $installExitCode. Detalhes: $($installOutput -join ' ')"
+else {
+  $installOutput = & $serviceExe install 2>&1
+  $installExitCode = $LASTEXITCODE
+  if ($installExitCode -ne 0) {
+    throw "Não foi possível registrar o serviço $serviceName. Código: $installExitCode. Detalhes: $($installOutput -join ' ')"
+  }
 }
 
 $installedService = Get-Service -Name $serviceName -ErrorAction Stop
