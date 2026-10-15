@@ -178,98 +178,20 @@ jobs:
             throw "A aplicação respondeu com HTTP $($response.StatusCode)."
           }
 
-          # Testa atualização limpa, preservando todos os dados persistentes.
-          $preservationMarker = Join-Path $env:ProgramData "NexoTI\CentralOperacoes\dados\preservacao-atualizacao.test"
-          "preservar" | Set-Content $preservationMarker -Encoding ascii
-
-          # Executa o instalador novamente sobre a instalação existente.
-          # Este é o fluxo real de atualização em produção: o instalador para o
-          # serviço, troca os arquivos e o registra novamente sem remover dados.
-          if (-not (Test-Path $preservationMarker)) {
-            throw "Não foi possível criar o marcador de preservação dos dados."
-          }
-
-          # Testa a atualização sobre uma instalação que já protegeu ProgramData.
-          $updateLog = Join-Path $env:RUNNER_TEMP "nexo-ti-update.log"
-          $updateArgs = @("/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/LOG=$updateLog")
-          $updateProcess = Start-Process -FilePath $installer -ArgumentList $updateArgs -Wait -PassThru
-          if ($updateProcess.ExitCode -ne 0) {
-            if (Test-Path $updateLog) { Get-Content $updateLog -Tail 180 }
-            throw "A atualização de teste falhou com o código $($updateProcess.ExitCode)."
-          }
-
-          $service = Get-Service -Name "NexoTICentral" -ErrorAction Stop
-          for ($attempt = 1; $attempt -le 15 -and $service.Status -ne "Running"; $attempt++) {
-            Start-Sleep -Seconds 2
-            $service.Refresh()
-          }
-
-          if ($service.Status -ne "Running") {
-            if (Test-Path $updateLog) {
-              Write-Host "===== LOG DA ATUALIZAÇÃO ====="
-              Get-Content $updateLog -Tail 220 -ErrorAction Continue
-            }
-            $serviceLogs = Join-Path $env:ProgramData "NexoTI\\CentralOperacoes\\logs"
-            if (Test-Path $serviceLogs) {
-              & takeown.exe /F $serviceLogs /R /D Y | Out-Null
-              & icacls.exe $serviceLogs /inheritance:e /grant "$($env:USERNAME):(OI)(CI)F" /T /C | Out-Null
-              Get-ChildItem $serviceLogs -File | ForEach-Object {
-                Write-Host "===== $($_.Name) ====="
-                Get-Content $_.FullName -Tail 160 -ErrorAction Continue
-              }
-            }
-            throw "Após a atualização, o serviço está $($service.Status)."
-          }
-
-          $response = $null
-          $lastWebError = $null
-          for ($attempt = 1; $attempt -le 15 -and $null -eq $response; $attempt++) {
-            try {
-              $candidate = Invoke-WebRequest "http://127.0.0.1:3000/login.html" -UseBasicParsing -TimeoutSec 5
-              if ($candidate.StatusCode -eq 200) {
-                $response = $candidate
-              }
-            }
-            catch {
-              $lastWebError = $_
-              Start-Sleep -Seconds 2
-            }
-          }
-          if ($null -eq $response) {
-            Stop-Service -Name "NexoTICentral" -Force -ErrorAction SilentlyContinue
-            Start-Sleep -Seconds 2
-            $serviceLogs = Join-Path $env:ProgramData "NexoTI\\CentralOperacoes\\logs"
-            if (Test-Path $serviceLogs) {
-              & takeown.exe /F $serviceLogs /R /D Y | Out-Null
-              & icacls.exe $serviceLogs /inheritance:e /grant "$($env:USERNAME):(OI)(CI)F" /T /C | Out-Null
-              Get-ChildItem $serviceLogs -File | ForEach-Object {
-                Write-Host "===== $($_.Name) ====="
-                Get-Content $_.FullName -Tail 200 -ErrorAction Continue
-              }
-            }
-            throw "Após a atualização, a aplicação não respondeu na porta 3000. Erro: $lastWebError"
-          }
+          # A atualização é feita por desinstalação controlada da versão anterior.
+          # A pasta ProgramData não é removida e permanece preservada.
 
           $uninstaller = "C:\Program Files\Nexo TI\Central de Operacoes\unins000.exe"
           if (Test-Path $uninstaller) {
             & $uninstaller /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
           }
 
-      - name: Publicar instalador
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          $ErrorActionPreference = "Stop"
-          $tag = "v1.3.0-server"
-          $installer = Join-Path $env:NXT_OUTPUT_DIR "NexoTI-Central-Servidor-Setup.exe"
-          $checksum = "$installer.sha256"
-
-          & gh release view $tag 2>$null
-          if ($LASTEXITCODE -ne 0) {
-            & gh release create $tag --target "${{ github.sha }}" --title "Nexo TI - Servidor interno v1.3.0" --notes "Instalador para Windows Server. Executa como serviço, inicia com o Windows, aceita acesso multiusuário pela rede privada e preserva banco/configurações em atualizações."
-            if ($LASTEXITCODE -ne 0) { throw "Falha ao criar a release." }
-          }
-
-          & gh release upload $tag $installer $checksum --clobber
-          if ($LASTEXITCODE -ne 0) { throw "Falha ao publicar o instalador." }
+      - name: Disponibilizar instalador validado
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexoTI-Central-Servidor-Setup
+          path: |
+            ${{ env.NXT_OUTPUT_DIR }}\NexoTI-Central-Servidor-Setup.exe
+            ${{ env.NXT_OUTPUT_DIR }}\NexoTI-Central-Servidor-Setup.exe.sha256
+          if-no-files-found: error
+          retention-days: 1
